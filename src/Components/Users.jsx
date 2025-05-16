@@ -1,12 +1,52 @@
 import React, { useState } from 'react';
 import { useLoaderData } from 'react-router';
+import Swal from 'sweetalert2';
 
 const Users = () => {
     const initUsers=useLoaderData()
-    const [users,setusers]=useState(initUsers)
+    const [users,setUsers]=useState(initUsers)
+
+    const handleDelete=(_id)=>{
+// console.log('deleted', _id);
+Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+}).then((result) => {
+  if (result.isConfirmed) {
+    Swal.fire({
+      title: "Deleted!",
+      text: "Your file has been deleted.",
+      icon: "success"
+    });
+  }
+});
+
+fetch(`http://localhost:3000/users/${_id}`,{
+  method: "DELETE"
+})
+.then(res=>res.json())
+.then(data=>{
+  if(data.deletedCount){
+    const remainingUsers=users.filter(user=>user._id!==_id)
+    setUsers(remainingUsers)
+    //  Swal.fire({
+    //   title: "Deleted!",
+    //   text: "User has been deleted.",
+    //   icon: "success"
+    // });
+  }
+}
+)
+
+    } 
     return (
         <div>
-            <h2 className='text-3xl text-amber-100 mt-5 text-center'>Users: {initUsers.length}</h2>
+            <h2 className='text-3xl text-amber-100 mt-5 text-center'>Users: {users.length}</h2>
 
             <div className="overflow-x-auto ">
   <table className="table mt-8 ">
@@ -17,8 +57,8 @@ const Users = () => {
           
         </th>
         <th>Name</th>
-        <th>Job</th>
-        <th>Favorite Color</th>
+        <th>Contacts</th>
+        <th>Creation time</th>
         <th></th>
       </tr>
     </thead>
@@ -35,8 +75,7 @@ const Users = () => {
             <div className="avatar">
               <div className="mask mask-squircle h-12 w-12">
                 <img
-                  src="https://img.daisyui.com/images/profile/demo/2@94.webp"
-                  alt="Avatar Tailwind CSS Component" />
+                  src={user.photo} />
               </div>
             </div>
             <div>
@@ -46,13 +85,17 @@ const Users = () => {
           </div>
         </td>
         <td>
-          Zemlak, Daniel and Leannon
+         {user.email}
           <br />
-          <span className="badge badge-ghost badge-sm">Desktop Support Technician</span>
+          <span className="badge badge-ghost badge-sm">{user.phone}</span>
         </td>
-        <td>Purple</td>
-        <th>
-          <button className="btn btn-ghost btn-xs">details</button>
+        <td>{user.creationTime}</td>
+        <th className=''>
+         <div className='gap-5'>
+           <button className="btn btn-warning btn-xs">V</button>
+          <button className="btn btn-accent btn-xs">E</button>
+          <button onClick={()=>handleDelete(user._id)} className="btn btn-error btn-xs">D</button>
+         </div>
         </th>
       </tr>)
       }
